@@ -12,7 +12,7 @@
 FUZZ_TARGET(staletips)
 {
     DataStream stream{buffer};
-    StaleTipData data;
+    StaleTipMessage data;
     try {
         stream >> data;
     } catch (const std::ios_base::failure&) {
@@ -28,7 +28,7 @@ FUZZ_TARGET(staletips)
     DataStream serialized;
     serialized << data;
     DataStream roundtrip_stream{serialized};
-    StaleTipData roundtrip;
+    StaleTipMessage roundtrip;
     roundtrip_stream >> roundtrip;
     assert(roundtrip == data);
 }

@@ -70,15 +70,15 @@ const std::string BCH_TEST_VECTOR_HEX{
     "000000200eae92d9b46d81a011a79726a802d4eb195a7af8b70a09b0e115c391968c50d51c8a825935470118cd786d13"
     "00"};
 
-StaleTipData DecodeExact(DataStream stream)
+StaleTipMessage DecodeExact(DataStream stream)
 {
-    StaleTipData data;
+    StaleTipMessage data;
     stream >> data;
     if (!stream.empty()) throw std::ios_base::failure{"trailing staletip bytes"};
     return data;
 }
 
-StaleTipData DecodeExact(const std::vector<unsigned char>& payload)
+StaleTipMessage DecodeExact(const std::vector<unsigned char>& payload)
 {
     return DecodeExact(DataStream{payload});
 }

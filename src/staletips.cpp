@@ -52,7 +52,7 @@ VariantHeaderResult CompareVariantHeaders(const CBlockIndex& candidate, const CB
 
 } // namespace
 
-StaleTipData::StaleTipData(const StaleFork& fork)
+StaleTipMessage::StaleTipMessage(const StaleFork& fork)
 {
     AssertLockHeld(::cs_main);
     Assume(fork.fork_point != nullptr);
@@ -79,7 +79,7 @@ StaleTipData::StaleTipData(const StaleFork& fork)
     }
 }
 
-std::pair<uint256, std::vector<CBlockHeader>> StaleTipData::ReconstructHeaders() const
+std::pair<uint256, std::vector<CBlockHeader>> StaleTipMessage::ReconstructHeaders() const
 {
     std::vector<CBlockHeader> headers;
     headers.reserve(m_headers.size());

@@ -81,9 +81,8 @@ struct StaleTipCompressedHeader {
 /** Contents of a `staletip` P2P message: an announcement of a stale branch,
  *  consisting of the fork point hash, the compressed headers of the branch and
  *  whether the announcer has the stale tip's block data. */
-class StaleTipData
+struct StaleTipMessage
 {
-public:
     //! Block hash of the last common ancestor of the stale tip and the
     //! announcer's active chain.
     uint256 m_fork_point{};
@@ -93,10 +92,10 @@ public:
     //! Whether the announcer can provide the stale tip's block data on request.
     bool m_have_block{false};
 
-    StaleTipData() = default;
+    StaleTipMessage() = default;
     /** Construct an announcement for `fork`, compressing the headers between
      *  `fork.fork_point` (exclusive) and `fork.tip` (inclusive). */
-    explicit StaleTipData(const StaleFork& fork) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+    explicit StaleTipMessage(const StaleFork& fork) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
     /** Rebuild the full block headers from `m_headers` by computing each
      *  header's previous block hash, starting from `m_fork_point`.
@@ -106,7 +105,7 @@ public:
      */
     std::pair<uint256, std::vector<CBlockHeader>> ReconstructHeaders() const;
 
-    friend bool operator==(const StaleTipData& a, const StaleTipData& b)
+    friend bool operator==(const StaleTipMessage& a, const StaleTipMessage& b)
     {
         return a.m_fork_point == b.m_fork_point &&
                a.m_headers == b.m_headers &&
