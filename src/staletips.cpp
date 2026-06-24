@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <set>
 
-const uint256 StaleTips::TESTNET_MAX_TARGET{uint256::FromHex("0000000000000fffffffffffffffffffffffffffffffffffffffffffffffffff").value()};
+const uint256 StaleTipCache::TESTNET_MAX_TARGET{uint256::FromHex("0000000000000fffffffffffffffffffffffffffffffffffffffffffffffffff").value()};
 
 namespace {
 
@@ -100,7 +100,7 @@ std::pair<uint256, std::vector<CBlockHeader>> StaleTipMessage::ReconstructHeader
     return {prev_hash, headers};
 }
 
-const CBlockIndex* StaleTips::GetEligibleForkPoint(const CChain& chain, const CBlockIndex& stale_tip) const
+const CBlockIndex* StaleTipCache::GetEligibleForkPoint(const CChain& chain, const CBlockIndex& stale_tip) const
 {
     const CBlockIndex* active_tip{chain.Tip()};
     if (active_tip == nullptr) return nullptr;
@@ -126,7 +126,7 @@ const CBlockIndex* StaleTips::GetEligibleForkPoint(const CChain& chain, const CB
     return fork_point;
 }
 
-void StaleTips::Add(const CBlockIndex& stale_tip)
+void StaleTipCache::Add(const CBlockIndex& stale_tip)
 {
     AssertLockHeld(::cs_main);
 
@@ -173,7 +173,7 @@ void StaleTips::Add(const CBlockIndex& stale_tip)
     target->block_seqno = have_block ? target->header_seqno : 0;
 }
 
-void StaleTips::Initialize(node::BlockManager& blockman, const CChain& chain)
+void StaleTipCache::Initialize(node::BlockManager& blockman, const CChain& chain)
 {
     AssertLockHeld(::cs_main);
 
@@ -197,7 +197,7 @@ void StaleTips::Initialize(node::BlockManager& blockman, const CChain& chain)
     }
 }
 
-bool StaleTips::AddStaleTip(const CChain& chain, const CBlockIndex* stale_tip)
+bool StaleTipCache::AddStaleTip(const CChain& chain, const CBlockIndex* stale_tip)
 {
     AssertLockHeld(::cs_main);
     if (stale_tip == nullptr) return false;
@@ -211,7 +211,7 @@ bool StaleTips::AddStaleTip(const CChain& chain, const CBlockIndex* stale_tip)
     return true;
 }
 
-bool StaleTips::CanServeStaleTipBlock(const CChain& chain, const CBlockIndex* block) const
+bool StaleTipCache::CanServeStaleTipBlock(const CChain& chain, const CBlockIndex* block) const
 {
     AssertLockHeld(::cs_main);
     if (block == nullptr) return false;
@@ -223,7 +223,7 @@ bool StaleTips::CanServeStaleTipBlock(const CChain& chain, const CBlockIndex* bl
     return false;
 }
 
-std::vector<StaleFork> StaleTips::GetStaleTips(const CChain& chain) const
+std::vector<StaleFork> StaleTipCache::GetStaleTips(const CChain& chain) const
 {
     AssertLockHeld(::cs_main);
 
@@ -240,7 +240,7 @@ std::vector<StaleFork> StaleTips::GetStaleTips(const CChain& chain) const
     return tips;
 }
 
-std::vector<StaleTipInfo> StaleTips::GetStaleTipInfo(const CChain& chain) const
+std::vector<StaleTipInfo> StaleTipCache::GetStaleTipInfo(const CChain& chain) const
 {
     AssertLockHeld(::cs_main);
 

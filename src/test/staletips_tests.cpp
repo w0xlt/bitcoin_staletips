@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(staletip_cache_basic)
     for (int i{0}; i < 4; ++i) tip = tree.Add(tip, true, true);
 
     CBlockIndex* stale{tree.Add(Assert(tip->pprev), false)};
-    StaleTips tips;
+    StaleTipCache tips;
 
     BOOST_CHECK(tips.AddStaleTip(tree.active_chain, stale));
     auto info{tips.GetStaleTipInfo(tree.active_chain)};
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(staletip_cache_serve_policy)
     for (int i{0}; i < 4; ++i) tip = tree.Add(tip, true, true);
 
     CBlockIndex* stale{tree.Add(Assert(tip->pprev), false)};
-    StaleTips tips;
+    StaleTipCache tips;
     BOOST_CHECK(!tips.CanServeStaleTipBlock(tree.active_chain, nullptr));
 
     // A tracked header-only tip is not servable.
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE(staletip_cache_policy)
     CBlockIndex* old_fork{active};
     for (int i{0}; i < 10; ++i) active = tree.Add(active, true, true);
 
-    StaleTips tips{/*recent_window=*/3, /*max_headers=*/2};
+    StaleTipCache tips{/*recent_window=*/3, /*max_headers=*/2};
     BOOST_CHECK(!tips.AddStaleTip(tree.active_chain, tree.Add(old_fork, false)));
 
     CBlockIndex* fork{Assert(Assert(active->pprev)->pprev)};
@@ -298,7 +298,7 @@ BOOST_AUTO_TEST_CASE(staletip_cache_extending_tip_replaces_old_tip)
     for (int i{0}; i < 3; ++i) active = tree.Add(active, true, true);
 
     CBlockIndex* stale{tree.Add(Assert(Assert(active->pprev)->pprev), false)};
-    StaleTips tips;
+    StaleTipCache tips;
     BOOST_CHECK(tips.AddStaleTip(tree.active_chain, stale));
 
     CBlockIndex* stale_child{tree.Add(stale, false)};
@@ -320,14 +320,14 @@ BOOST_AUTO_TEST_CASE(staletip_cache_network_policy)
 
     CBlockIndex* fork{active->pprev};
     CBlockIndex* headers_only{tree.Add(fork, false)};
-    StaleTips signet_tips{ChainType::SIGNET};
+    StaleTipCache signet_tips{ChainType::SIGNET};
     BOOST_CHECK(!signet_tips.AddStaleTip(tree.active_chain, headers_only));
 
     headers_only->nStatus |= BLOCK_VALID_TRANSACTIONS | BLOCK_HAVE_DATA;
     BOOST_CHECK(signet_tips.AddStaleTip(tree.active_chain, headers_only));
 
     CBlockIndex* low_difficulty{tree.Add(fork, false, true, /*bits=*/0x207fffff)};
-    StaleTips testnet_tips{ChainType::TESTNET};
+    StaleTipCache testnet_tips{ChainType::TESTNET};
     BOOST_CHECK(!testnet_tips.AddStaleTip(tree.active_chain, low_difficulty));
 }
 

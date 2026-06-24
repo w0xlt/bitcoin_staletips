@@ -26,7 +26,7 @@ static constexpr size_t MAX_STALETIP_HEADERS{20};
 /** Default number of blocks below the active tip within which a stale tip is
  *  still considered recent enough to be tracked and relayed. */
 static constexpr int STALETIP_RECENT_WINDOW{1000};
-/** Maximum number of stale tips retained in the StaleTips cache. */
+/** Maximum number of stale tips retained in StaleTipCache. */
 static constexpr size_t MAX_RETAINED_STALETIPS{10};
 
 /** A stale branch of the block tree, described by its tip and the point where
@@ -170,7 +170,7 @@ struct StaleTipMessage
  * header variants are deduplicated, while on testnet the tip must meet a
  * minimum difficulty so that min-difficulty blocks are not relayed.
  */
-class StaleTips
+class StaleTipCache
 {
 private:
     struct Entry {
@@ -210,15 +210,15 @@ public:
     /** Maximum target allowed for testnet stale-tip relay policy. */
     static const uint256 TESTNET_MAX_TARGET;
 
-    StaleTips() = default;
+    StaleTipCache() = default;
     /** Construct a cache with a non-default chain type or policy parameters. */
-    explicit StaleTips(ChainType chain_type, int recent_window = STALETIP_RECENT_WINDOW, size_t max_headers = MAX_STALETIP_HEADERS)
+    explicit StaleTipCache(ChainType chain_type, int recent_window = STALETIP_RECENT_WINDOW, size_t max_headers = MAX_STALETIP_HEADERS)
         : m_chain_type{chain_type}, m_recent_window{recent_window}, m_max_headers{max_headers}
     {
     }
 
-    explicit StaleTips(int recent_window, size_t max_headers)
-        : StaleTips{ChainType::MAIN, recent_window, max_headers}
+    explicit StaleTipCache(int recent_window, size_t max_headers)
+        : StaleTipCache{ChainType::MAIN, recent_window, max_headers}
     {
     }
 
