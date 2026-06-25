@@ -26,7 +26,7 @@ static constexpr size_t MAX_STALETIP_HEADERS{20};
 /** Default number of blocks below the active tip within which a stale tip is
  *  still considered recent enough to be tracked and relayed. */
 static constexpr int STALETIP_RECENT_WINDOW{1000};
-/** Maximum number of stale tips retained in the StaleTips cache. */
+/** Maximum number of stale tips retained in StaleTipCache. */
 static constexpr size_t MAX_RETAINED_STALETIPS{10};
 
 /** A stale branch of the block tree, described by its tip and the point where
@@ -81,9 +81,8 @@ struct StaleTipCompressedHeader {
 /** Contents of a `staletip` P2P message: an announcement of a stale branch,
  *  consisting of the fork point hash, the compressed headers of the branch and
  *  whether the announcer has the stale tip's block data. */
-class StaleTipData
+struct StaleTipMessage
 {
-public:
     //! Block hash of the last common ancestor of the stale tip and the
     //! announcer's active chain.
     uint256 m_fork_point{};
@@ -93,10 +92,10 @@ public:
     //! Whether the announcer can provide the stale tip's block data on request.
     bool m_have_block{false};
 
-    StaleTipData() = default;
+    StaleTipMessage() = default;
     /** Construct an announcement for `fork`, compressing the headers between
      *  `fork.fork_point` (exclusive) and `fork.tip` (inclusive). */
-    explicit StaleTipData(const StaleFork& fork) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+    explicit StaleTipMessage(const StaleFork& fork) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
     /** Rebuild the full block headers from `m_headers` by computing each
      *  header's previous block hash, starting from `m_fork_point`.
@@ -106,7 +105,7 @@ public:
      */
     std::pair<uint256, std::vector<CBlockHeader>> ReconstructHeaders() const;
 
-    friend bool operator==(const StaleTipData& a, const StaleTipData& b)
+    friend bool operator==(const StaleTipMessage& a, const StaleTipMessage& b)
     {
         return a.m_fork_point == b.m_fork_point &&
                a.m_headers == b.m_headers &&
@@ -171,7 +170,7 @@ public:
  * header variants are deduplicated, while on testnet the tip must meet a
  * minimum difficulty so that min-difficulty blocks are not relayed.
  */
-class StaleTips
+class StaleTipCache
 {
 private:
     struct Entry {
@@ -211,15 +210,15 @@ public:
     /** Maximum target allowed for testnet stale-tip relay policy. */
     static const uint256 TESTNET_MAX_TARGET;
 
-    StaleTips() = default;
+    StaleTipCache() = default;
     /** Construct a cache with a non-default chain type or policy parameters. */
-    explicit StaleTips(ChainType chain_type, int recent_window = STALETIP_RECENT_WINDOW, size_t max_headers = MAX_STALETIP_HEADERS)
+    explicit StaleTipCache(ChainType chain_type, int recent_window = STALETIP_RECENT_WINDOW, size_t max_headers = MAX_STALETIP_HEADERS)
         : m_chain_type{chain_type}, m_recent_window{recent_window}, m_max_headers{max_headers}
     {
     }
 
-    explicit StaleTips(int recent_window, size_t max_headers)
-        : StaleTips{ChainType::MAIN, recent_window, max_headers}
+    explicit StaleTipCache(int recent_window, size_t max_headers)
+        : StaleTipCache{ChainType::MAIN, recent_window, max_headers}
     {
     }
 
